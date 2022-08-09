@@ -175,10 +175,18 @@ module OmniAuth
     #
     # @param env [Hash] The Rack environment.
     def call!(env) # rubocop:disable CyclomaticComplexity, PerceivedComplexity
+      Rails.logger.info('---omniauth---call---0')
       unless env['rack.session']
         error = OmniAuth::NoSessionError.new('You must provide a session to use OmniAuth.')
         raise(error)
       end
+
+      session = env['rack.session']
+
+      Rails.logger.info('---omniauth---call---1')
+      Rails.logger.info('session.state: ' + session["state"].inspect )
+      Rails.logger.info('omniauth.state: ' + session["omniauth.state"].inspect )
+
 
       @env = env
 
@@ -187,11 +195,21 @@ module OmniAuth
       @env['omniauth.strategy'] = self if on_auth_path?
 
       return mock_call!(env) if OmniAuth.config.test_mode
+      Rails.logger.info('---omniauth---call---2')
+      Rails.logger.info('session.state: ' + session["state"].inspect )
+      Rails.logger.info('omniauth.state: ' + session["omniauth.state"].inspect )
 
       begin
+        Rails.logger.info('---omniauth---call---3')
+        Rails.logger.info('session.state: ' + session["state"].inspect )
+        Rails.logger.info('omniauth.state: ' + session["omniauth.state"].inspect )
+
         return options_call if on_auth_path? && options_request?
         return request_call if on_request_path? && OmniAuth.config.allowed_request_methods.include?(request.request_method.downcase.to_sym)
-        return callback_call if on_callback_path?
+        Rails.logger.info('---omniauth---call---4')
+        Rails.logger.info('session.state: ' + session["state"].inspect )
+        Rails.logger.info('omniauth.state: ' + session["omniauth.state"].inspect )
+          return callback_call if on_callback_path?
         return other_phase if respond_to?(:other_phase)
       rescue StandardError => e
         raise e if env.delete('omniauth.error.app')
